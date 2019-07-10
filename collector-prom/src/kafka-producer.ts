@@ -1,5 +1,6 @@
 import * as kafka from "kafka-node";
 import {KafkaStatus} from "./kafka-status";
+import {logger} from 'logger'
 
 export class KafkaProducer {
 
@@ -32,12 +33,17 @@ export class KafkaProducer {
 
     onError(err) {
         // TODO integrate logger.
-        console.log(err)
+        logger.error(err.message)
+    }
+
+    onReady() {
+        this._status = KafkaStatus.Ready
+        this._client.refreshMetadata([this._topic]) // Issue #354
     }
 
     connect() {
         this._producer = new kafka.Producer(this._client, this._options)
-        this._producer.on('ready', () => this._status = KafkaStatus.Ready)
+        this._producer.on('ready', this.onReady)
         this._producer.on('error', this.onError)
     }
 
