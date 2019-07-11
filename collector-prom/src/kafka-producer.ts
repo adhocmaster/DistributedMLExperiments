@@ -12,9 +12,11 @@ export class KafkaProducer {
     _client: kafka.KafkaClient;
     _producer: kafka.Producer;
     _options: any;
-    _counter: number;
+    _counter: number; // won't work if  custom callback is used to send 
+    _holder: KafkaProducer;
 
     constructor(client: kafka.KafkaClient, topic: string, options = null, verbose=false) {
+        this._holder = this
         this._client = client
         this._topic = topic
         this._status = KafkaStatus.Starting
@@ -28,7 +30,11 @@ export class KafkaProducer {
         return this._topic
     }
 
-    get status() { return this._status }
+    get status() { 
+        if (this._producer.isReady())
+            this._status = KafkaStatus.Ready
+        return this._status 
+    }
 
     set verbose(on_or_off) {
         this._verbose = on_or_off
@@ -46,33 +52,74 @@ export class KafkaProducer {
 
     onReady() {
         this._status = KafkaStatus.Ready
-        this._client.refreshMetadata([this._topic]) // Issue #354
+        let self = this
+        this._client.refreshMetadata([this._topic], function(err?:Error) {
+            self._status = KafkaStatus.Dirty
+            if (!!err)
+                logger.info('refreshMetadata failed onReady', err.message)
+            else 
+                logger.info('refreshMetadata completed')
+        }) // Issue #354
         logger.info('Producer ready with status' + this.status)
     }
 
     connect() {
         logger.debug("connecting producer")
+        let ctx = this
         this._producer = new kafka.Producer(this._client, this._options)
-        this._producer.on('ready', this.onReady)
-        this._producer.on('error', this.onError)
+        this._producer.on('ready', function() { ctx.onReady() })
+        this._producer.on('error', function(err) { ctx.onError(err) })
     }
 
     onSendComplete(err, data) {
+        logger.debug( 'onSendComplete called' )
         if (err == null) {
             this._counter++
-            logger.info(data)
+            logger.info('onSendCompleteData: ' + JSON.stringify(data))
         } else {
-            logger.error(err)
+            logger.error('onSendCompleteError: ' + JSON.stringify(err))
         }
     }
 
-    send(strMsg) {
+    _sendReady(ctx, payloads, callback:(err:Error, data:any) => any = null) {
 
-        let payload = MessageProcessor.fromString(this._topic, strMsg)
-        if ( this._status == KafkaStatus.Ready )
-            this._producer.send(payload, this.onSendComplete)
+        if ( callback == null )
+            ctx._producer.send(payloads, function(err, data) { ctx.onSendComplete(err, data) })
         else
-            throw Error('Producer not ready')
+            ctx._producer.send(payloads, callback)
+
+    }
+
+    send(strMsg, callback:(err:Error, data:any) => any = null) {
+
+        let payloads = MessageProcessor.fromString(this._topic, strMsg)
+        logger.debug('Payloads: ' + JSON.stringify(payloads))
+
+        let ctx = this
+        if ( this._status == KafkaStatus.Ready ) {
+
+            logger.debug('Producer already ready')
+            ctx._sendReady(ctx, payloads, callback)
+        } else {
+
+            logger.debug('Producer not ready. Listening to ready event')
+            this._producer.on('ready', function() {
+                ctx._sendReady(ctx, payloads, callback)
+            })
+
+        }
+
+
+        // let ctx = this
+
+        // this._producer.on('ready', function() {
+
+        //     if ( callback == null )
+        //         ctx._producer.send(payloads, function(err, data) { ctx.onSendComplete(err, data) })
+        //     else
+        //         ctx._producer.send(payloads, callback)
+
+        // })
 
     }
 

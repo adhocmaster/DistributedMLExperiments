@@ -1,14 +1,19 @@
 import {expect} from 'chai'
-import {KafkaManager} from 'kafka-manager'
 import 'mocha'
+import "reflect-metadata"
+import {IoC} from "inversify.config"
+import {inject} from 'inversify'
+import {KafkaManager} from 'kafka-manager'
 import {KafkaStatus} from 'kafka-status'
 
 describe('KafkaManager Tests', function() {
 
     this.timeout(10000)
 
-    let hosts = ["192.168.26.10:32400", "192.168.26.11:32400"]
-    const manager = new KafkaManager("Test Kafka Manager", hosts)
+    // let hosts = ["192.168.26.10:32400", "192.168.26.11:32400"]
+    // const manager = new KafkaManager("Test Kafka Manager", hosts)
+
+    const manager = IoC.get<KafkaManager>("KafkaManager")
 
     after('Shutting down manager', function(done) {
 

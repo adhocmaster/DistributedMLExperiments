@@ -4,7 +4,7 @@ import {logger} from 'logger'
 import {KafkaProducer} from "kafka-producer"
 import {KafkaStatus} from "kafka-status"
 
-//@injectable()
+@injectable()
 export class KafkaManager {
 
     private _name: string;
@@ -50,18 +50,18 @@ export class KafkaManager {
     createClient() {
         this._clientStatus = KafkaStatus.Starting
         this._client = new kafka.KafkaClient(this._clientOptions)
-
-        this._client.on('error', err => { 
-            this._clientStatus = KafkaStatus.Dirty
-            logger.info('Client dirty with status ' + this.clientStatus )
+        let self = this
+        this._client.on('error', function(err) { 
+            self._clientStatus = KafkaStatus.Dirty
+            logger.info('Client dirty with error: ' + err.message)
         })
-        this._client.on('socket_error', err => { 
-            this._clientStatus = KafkaStatus.Dirty
-            logger.info('Client dirty with status ' + this.clientStatus )
+        this._client.on('socket_error', function(err) { 
+            self._clientStatus = KafkaStatus.Dirty
+            logger.info('Client dirty with error: ' + err.message)
         })
-        this._client.on('ready', () => { 
-            this._clientStatus = KafkaStatus.Ready
-            logger.info('Client ready with status ' + this.clientStatus )
+        this._client.on('ready', function() { 
+            self._clientStatus = KafkaStatus.Ready
+            logger.info('Client ready with status ' + self.clientStatus )
         })
     }
 
