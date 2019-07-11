@@ -50,7 +50,7 @@ describe("Kafka Producer", function() {
         setTimeout( () => {
             expect(producer._counter).equal(5)
             done()
-        }, 60000)
+        }, 30000)
     })
 
 })

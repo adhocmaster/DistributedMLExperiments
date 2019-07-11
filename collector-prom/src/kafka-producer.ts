@@ -30,6 +30,9 @@ export class KafkaProducer {
         return this._topic
     }
 
+    get ready() {
+        return this._producer.isReady()
+    }
     get status() { 
         if (this._producer.isReady())
             this._status = KafkaStatus.Ready
@@ -96,7 +99,7 @@ export class KafkaProducer {
         logger.debug('Payloads: ' + JSON.stringify(payloads))
 
         let ctx = this
-        if ( this._status == KafkaStatus.Ready ) {
+        if ( this.ready ) {
 
             logger.debug('Producer already ready')
             ctx._sendReady(ctx, payloads, callback)
