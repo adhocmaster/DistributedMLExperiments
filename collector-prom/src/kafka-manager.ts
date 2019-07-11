@@ -9,8 +9,8 @@ export class KafkaManager {
 
     private _name: string;
     private _hosts: string[];
-    private _producers: {}; // mapped by topic
-    private _consumers: {}; // mapped by topic
+    private _producers: any; // mapped by topic
+    private _consumers: any; // mapped by topic
     private _clientOptions: any;
     private _client: kafka.KafkaClient;
     private _defaultProducerOptions: {};
@@ -27,6 +27,9 @@ export class KafkaManager {
         this._name = name
         this._hosts = hosts
 
+        this._producers = {}
+        this._consumers = {}
+
         let csHosts = {kafkaHost: this.getCSHosts()}
         this._clientOptions = {...csHosts, ...clientOptions}
 
@@ -42,7 +45,7 @@ export class KafkaManager {
         this._hosts.push(host)
     }
 
-    clientStatus() { return this._clientStatus }
+    get clientStatus() { return this._clientStatus }
 
     createClient() {
         this._clientStatus = KafkaStatus.Starting
@@ -50,22 +53,19 @@ export class KafkaManager {
 
         this._client.on('error', err => { 
             this._clientStatus = KafkaStatus.Dirty
-            logger.info('Client dirty with status ' + this.clientStatus() )
-            logger.info('Client dirty with status ' + this._clientStatus )
+            logger.info('Client dirty with status ' + this.clientStatus )
         })
         this._client.on('socket_error', err => { 
             this._clientStatus = KafkaStatus.Dirty
-            logger.info('Client dirty with status ' + this.clientStatus() )
-            logger.info('Client dirty with status ' + this._clientStatus )
+            logger.info('Client dirty with status ' + this.clientStatus )
         })
         this._client.on('ready', () => { 
             this._clientStatus = KafkaStatus.Ready
-            logger.info('Client ready with status ' + this.clientStatus() )
-            logger.info('Client ready with status ' + this._clientStatus )
+            logger.info('Client ready with status ' + this.clientStatus )
         })
     }
 
-    getProducer(topic: string, options=null) {
+    getProducer(topic: string, options=null): KafkaProducer {
 
         if (topic in this._producers) {
             return this._producers[topic]
@@ -75,7 +75,7 @@ export class KafkaManager {
 
     }
 
-    createManagedProducer(topic: string, options: any) {
+    createManagedProducer(topic: string, options: any): KafkaProducer {
 
         if (options == null || Object.keys(options).length === 0) {
             options = this._defaultProducerOptions

@@ -2,11 +2,10 @@ import {expect} from 'chai'
 import {KafkaManager} from 'kafka-manager'
 import 'mocha'
 import {KafkaStatus} from 'kafka-status'
-import {Utility} from 'utility'
 
 describe('KafkaManager Tests', function() {
 
-    this.timeout(8000)
+    this.timeout(10000)
 
     let hosts = ["192.168.26.10:32400", "192.168.26.11:32400"]
     const manager = new KafkaManager("Test Kafka Manager", hosts)
@@ -22,11 +21,25 @@ describe('KafkaManager Tests', function() {
     it('client must be ready', function(done) {
         setTimeout( () => {
 
-            expect(manager.clientStatus()).equal(KafkaStatus.Ready)
+            expect(manager.clientStatus).equal(KafkaStatus.Ready)
             done()
 
-        }, 4000)
+        }, 2000)
 
+    })
+
+    it('must create a producer', function(done) {
+        let producer = manager.getProducer("first")
+        setTimeout(() => {
+            expect(producer.status).equal(KafkaStatus.Ready)
+            done()
+        }, 5000)
+
+        producer = manager.getProducer("second")
+        setTimeout(() => {
+            expect(producer.status).equal(KafkaStatus.Ready)
+            done()
+        }, 5000)
     })
 
 })
