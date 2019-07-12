@@ -1,8 +1,8 @@
 import { Container, injectable, inject } from "inversify"
 import * as kafka from "kafka-node"
 import {logger} from 'logger'
-import {KafkaProducer} from "kafka-producer"
-import {KafkaStatus} from "kafka-status"
+import {KafkaProducer} from "src/kafka/kafka-producer"
+import {KafkaStatus} from "src/kafka/kafka-status"
 
 @injectable()
 export class KafkaManager {

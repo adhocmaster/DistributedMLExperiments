@@ -11,19 +11,20 @@ describe('ConfigManager', function() {
 
     it("must display the version", function(){
         let version = config.get("version")
-        expect(version.length).to.have.lengthOf.above(0)
+        console.log(version)
+        expect(version).to.have.lengthOf.above(0)
     })
 
     it("must match the environment", function(){
 
         const environment = process.env.NODE_ENV || 'default'; 
-        let environment = config.get("environment")
-        expect(environment.length).to.equal(environment)
+        let environmentFromConfig = config.get("environment")
+        expect(environment).to.equal(environmentFromConfig)
         
 
     })
 
-    it("has the test prom host url set to 192.168.26.10", () => {
+    it("has the development prom host url set to 192.168.26.10", () => {
 
         let environment = config.get("environment")
         if (environment != 'development') {
