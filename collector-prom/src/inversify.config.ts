@@ -1,10 +1,11 @@
 import "reflect-metadata";
 import { Container } from "inversify";
-import {KafkaManager} from "kafka-manager"
+import {KafkaManager} from "src/kafka/kafka-manager"
 
 const IoC = new Container()
 
 let hosts = ["192.168.26.10:32400", "192.168.26.11:32400"]
+// TODO read from environment or configs
 
 const clientOptions = {
     connectTimeout: 2000,
