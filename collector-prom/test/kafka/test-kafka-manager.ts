@@ -1,10 +1,10 @@
 import {expect} from 'chai'
 import 'mocha'
 import "reflect-metadata"
-import {IoC} from "inversify.config"
+import {IoC} from "src/inversify.config"
 import {inject} from 'inversify'
-import {KafkaManager} from 'kafka-manager'
-import {KafkaStatus} from 'kafka-status'
+import {KafkaManager} from 'src/kafka/kafka-manager'
+import {KafkaStatus} from 'src/kafka/kafka-status'
 
 describe('KafkaManager Tests', function() {
 

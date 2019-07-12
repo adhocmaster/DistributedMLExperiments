@@ -1,7 +1,7 @@
 import * as kafka from "kafka-node";
 import {KafkaStatus} from "./kafka-status";
 import {logger} from 'logger'
-import {MessageProcessor} from 'kafka-message-processor'
+import {MessageProcessor} from 'src/kafka/kafka-message-processor'
 import { interfaces } from "inversify";
 
 export class KafkaProducer {

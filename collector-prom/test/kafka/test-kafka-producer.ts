@@ -1,7 +1,7 @@
 import {expect} from 'chai'
-import {KafkaManager} from 'kafka-manager'
+import {KafkaManager} from 'src/kafka/kafka-manager'
 import 'mocha'
-import {KafkaStatus} from 'kafka-status'
+import {KafkaStatus} from 'src/kafka/kafka-status'
 import { logger } from 'src/logger';
 
 describe("Kafka Producer", function() {
