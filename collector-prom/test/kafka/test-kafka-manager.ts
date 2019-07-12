@@ -29,7 +29,7 @@ describe('KafkaManager Tests', function() {
             expect(manager.clientStatus).equal(KafkaStatus.Ready)
             done()
 
-        }, 2000)
+        }, 5000)
 
     })
 

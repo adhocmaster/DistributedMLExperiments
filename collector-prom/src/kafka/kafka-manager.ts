@@ -18,6 +18,7 @@ export class KafkaManager {
 
     constructor(name='Default KafkaManager', hosts=[], clientOptions = {}) {
 
+        logger.warn( `setting up kafka with hosts: ${hosts}` )
         this._defaultProducerOptions = {
                 requireAcks: 1,
                 ackTimeoutMs: 100,
