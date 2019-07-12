@@ -15,11 +15,13 @@ export class ConfigManager {
         // load default
         this.data = this.load('default')
         this.data['environment'] = environment
+        console.log(this.data)
         if (environment != 'default') {
             // load specific
             let environmentConfig = this.load(environment)
             this.data = lodash.merge(this.data, environmentConfig)
         }
+        console.log(this.data)
 
     }
 
@@ -42,12 +44,23 @@ export class ConfigManager {
     getNum(name: string, orDefault=null) {
         return Number(this.get(name, orDefault))
     }
+
     get(name: string, orDefault=null) {
 
-        if (name in this.data)
-            return this.data[name]
-        return orDefault
+        let self = this
+        return name.split('.').reduce((p,c) => {
+            let val =  (p && p[c]) || orDefault
+            // console.log(p)
+            // console.log(c)
+            // console.log( `p: ${p}, p[c]: ${p[c]}` )
+            return val
+        }, self.data)
+
+        // if (name in this.data)
+        //     return this.data[name]
+        // return orDefault
     }
+
     save(environment: string) {
 
         let path = `env/{$environment}.yaml`
