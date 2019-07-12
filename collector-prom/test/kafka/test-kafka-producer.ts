@@ -48,9 +48,40 @@ describe("Kafka Producer", function() {
         }
         logger.debug('message send requested. now will wait')
         setTimeout( () => {
-            expect(producer._counter).equal(5)
+            expect(producer._counter).equal(6)
             done()
-        }, 30000)
+        }, 20000)
+    })
+
+
+    it('must publish multi message to a new topic', function(done) {
+        this.timeout(15000)
+        let producer = manager.getProducer("node-multi" + Date.now().toString())
+        let msgs = []
+        for (let i = 1; i < 6; ++i) {
+            msgs.push("message #" + i)
+        }
+        producer.sendArr(msgs)
+        logger.debug('message send requested. now will wait')
+        setTimeout( () => {
+            expect(producer._counter).equal(1)
+            done()
+        }, 12000)
+    })
+
+    it('must publish batch message to a new topic', function(done) {
+        this.timeout(15000)
+        let producer = manager.getProducer("node-multi" + Date.now().toString())
+        let msgs = []
+        for (let i = 1; i < 6; ++i) {
+            msgs.push("message #" + i)
+        }
+        producer.sendBatch(msgs)
+        logger.debug('message send requested. now will wait')
+        setTimeout( () => {
+            expect(producer._counter).equal(1)
+            done()
+        }, 12000)
     })
 
 })

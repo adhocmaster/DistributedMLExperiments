@@ -93,9 +93,8 @@ export class KafkaProducer {
 
     }
 
-    send(strMsg, callback:(err:Error, data:any) => any = null) {
+    sendPayLoads(payloads: any[], callback:(err:Error, data:any) => any = null) {
 
-        let payloads = MessageProcessor.fromString(this._topic, strMsg)
         logger.debug('Payloads: ' + JSON.stringify(payloads))
 
         let ctx = this
@@ -112,19 +111,39 @@ export class KafkaProducer {
 
         }
 
+    }
 
-        // let ctx = this
+    send(strMsg:string, callback:(err:Error, data:any) => any = null) {
 
-        // this._producer.on('ready', function() {
-
-        //     if ( callback == null )
-        //         ctx._producer.send(payloads, function(err, data) { ctx.onSendComplete(err, data) })
-        //     else
-        //         ctx._producer.send(payloads, callback)
-
-        // })
+        let payloads = MessageProcessor.fromString(this._topic, strMsg)
+        this.sendPayLoads(payloads, callback)
 
     }
+
+    // separate messages
+    sendArr(strArr: string[], callback:(err:Error, data:any) => any = null) {
+        let payloads = MessageProcessor.fromStringArr(this._topic, strArr)
+        this.sendPayLoads(payloads, callback)
+
+    }
+
+    sendObj(obj: any, callback:(err:Error, data:any) => any = null) {
+
+        let payloads = MessageProcessor.fromString(this._topic, JSON.stringify(obj))
+        this.sendPayLoads(payloads, callback)
+
+    }
+
+    // all the items will become a single message.
+    sendBatch(batch: string[], callback:(err:Error, data:any) => any = null) {
+
+        let payloads = MessageProcessor.fromStringArrToSingleMessage(this._topic, batch)
+        this.sendPayLoads(payloads, callback)
+
+    }
+
+
+    
 
 
 }
