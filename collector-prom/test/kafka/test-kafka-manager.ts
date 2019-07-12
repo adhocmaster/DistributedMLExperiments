@@ -8,7 +8,7 @@ import {KafkaStatus} from 'src/kafka/kafka-status'
 
 describe('KafkaManager Tests', function() {
 
-    this.timeout(10000)
+    this.timeout(15000)
 
     // let hosts = ["192.168.26.10:32400", "192.168.26.11:32400"]
     // const manager = new KafkaManager("Test Kafka Manager", hosts)
@@ -37,7 +37,6 @@ describe('KafkaManager Tests', function() {
         let producer = manager.getProducer("first")
         setTimeout(() => {
             expect(producer.status).equal(KafkaStatus.Ready)
-            done()
         }, 5000)
 
         producer = manager.getProducer("second")
