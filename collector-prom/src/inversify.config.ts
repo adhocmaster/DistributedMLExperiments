@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Container } from "inversify";
 import {KafkaManager} from "src/kafka/kafka-manager"
-import {ConfigManager} from 'config-manager'
+import {ConfigManager} from 'src/util/config-manager'
 
 const IoC = new Container()
 const configManager = new ConfigManager()

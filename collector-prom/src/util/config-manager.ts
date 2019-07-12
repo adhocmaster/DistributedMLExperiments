@@ -5,7 +5,7 @@ import {injectable} from 'inversify'
 import * as logger from 'logger'
 
 @injectable
-class ConfigManager {
+export class ConfigManager {
 
     data: {string: any}
     constructor() {
@@ -14,6 +14,7 @@ class ConfigManager {
 
         # load default
         this.data = load('default')
+        this.data['environment'] = environment
         if (environment != 'default') {
             # load specific
             let environmentConfig = load(environment)
