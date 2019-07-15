@@ -34,6 +34,7 @@ describe('KafkaManager Tests', function() {
     })
 
     it('must create a producer', function(done) {
+
         let producer = manager.getProducer("first")
         setTimeout(() => {
             expect(producer.status).equal(KafkaStatus.Ready)
@@ -44,6 +45,7 @@ describe('KafkaManager Tests', function() {
             expect(producer.status).equal(KafkaStatus.Ready)
             done()
         }, 5000)
+        
     })
 
 })
