@@ -9,13 +9,14 @@ We are dividing the configurations for metrics based on
 2. Aggregation.
 3. Topic
 4. Sources, i.e. - namespace, app, etc
+5. Rate of request?
 
 ## Common Configuration
 1. Target Application / name spaces
 2. hosts
 
 ## Metric Channel
-So, we compose a metric channel with specific configurations for it and combine it with common configurations. Metric channel is defined as a stream of measurements which is created for a specific purpose. A metric channel has an exclusive topic, a strict schema, and can have multiple sources.
+So, we compose a metric channel with specific configurations for it and combine it with common configurations. Metric channel is defined as a stream of measurements which is created for a specific purpose. A metric channel has an exclusive topic, a strict schema or a set of schema, and can have multiple sources.
 
 ## Setting up purpose specific configurations:
 
