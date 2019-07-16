@@ -78,7 +78,7 @@ export class KafkaProducer {
         logger.debug( 'onSendComplete called' )
         if (err == null) {
             this._counter++
-            logger.info('onSendCompleteData: ' + JSON.stringify(data))
+            logger.debug('onSendCompleteData: ' + JSON.stringify(data))
         } else {
             logger.error('onSendCompleteError: ' + JSON.stringify(err))
         }

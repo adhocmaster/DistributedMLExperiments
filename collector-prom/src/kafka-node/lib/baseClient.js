@@ -101,7 +101,7 @@ Client.prototype.sendProduceRequest = function (payloads, requireAcks, ackTimeou
         }
         cb(err);
       } else {
-        cb(null, result);
+        cb(null, result); // why call back null, result?
       }
     });
   });

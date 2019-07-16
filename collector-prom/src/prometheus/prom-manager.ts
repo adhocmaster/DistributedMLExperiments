@@ -6,9 +6,13 @@ import { ConfigManager } from "src/util/config-manager";
 import { ChannelStats } from "src/transformer/channel-stats";
 import { MetricChannelStatus } from "src/transformer/metric-channel-status";
 import { logger } from "src/logger";
+import { KafkaManager } from "src/kafka/kafka-manager";
+import { resolve } from "url";
+import { SourceType } from "src/transformer/source-types";
 
 export class PromManager {
     
+    kafkaManager: KafkaManager
     host: string
     port: string
     instantUrl: string
@@ -17,8 +21,9 @@ export class PromManager {
     channelStats: {number: ChannelStats} // {id: {lastProbeTS: remote UTC, lastNumRecords:, totalNumRecords:}}
     timers: {}
 
-    constructor(@inject('ConfigManager') configManager) {
+    constructor(@inject('ConfigManager') configManager, @inject('KafkaManager') kafkaManager) {
 
+        this.kafkaManager = kafkaManager
         this.host = configManager.getStr('prom.host')
         this.port = configManager.getStr('prom.port')
         this.instantUrl = 'http://' + this.host + ':' + this.port + '/api/v1/query'
@@ -64,10 +69,9 @@ export class PromManager {
         }
     }
 
-    fetchAndPublish(channelId: number, sourceConfiguration: SourceConfiguration) {
+    fetchAndPublish(channel: MetricChannel, sourceConfiguration: SourceConfiguration) {
 
-        let channel = this.liveChannels[channelId] // TODO handle it if there is not channel
-        let stats = this.channelStats[channelId]
+        let stats = this.channelStats[channel.id]
         let query = sourceConfiguration.query
         if (sourceConfiguration.isRanged) {
 
@@ -75,7 +79,7 @@ export class PromManager {
                 params: {
                     query: query,
                     start: stats['lastProbeTS'],
-                    end: stats['lastProbeTS'] + channel.captureStep,
+                    end: stats['lastProbeTS'] + channel.getCaptureStepInS(),
                     step: channel.resolution,
                     timeout: channel.timeout
                 }
@@ -99,16 +103,16 @@ export class PromManager {
 
     }
 
-    processTimeSeries(channel, data) {
+    processTimeSeries(channel, rawData) {
         // 1. Publish
 
-        if (data.status == 'success') {
+        if (rawData.status == 'success') {
 
-            this.publish(channel, data['data']['result'])
+            this.publish(channel, this.getMQMessage(rawData)) // Use a promise to do it
 
         } else {
 
-            logger.error(`invalid timeseries data from Prom: ${data.status} for channel #${channel.id}`)
+            logger.error(`invalid timeseries data from Prom: ${rawData.status} for channel #${channel.id}`)
             channel.updateStatus(MetricChannelStatus.SourceDirty)
             
         }
@@ -116,7 +120,50 @@ export class PromManager {
         // 2. TODO Update Stats on success? what happens if Kafka goes down and comes back with a lot of obsolete data?
     }
 
+    getMQMessage(rawData) {
+
+        // TODO refactor it to another message processor which creates messages from different sources? Or should it be manager specific?
+        let message = {
+            sourceType: SourceType.PROM,
+            data: rawData['data']
+        }
+
+        return message
+
+    }
+
     publish(channel, message) {
         // TODO
+        let promise = this.kafkaManager.promiseToPublish(channel.topic, message)
+
+        promise.then(function(result) {
+
+            logger.debug(`Prom manager publish result: ${result}`)
+            this.onPublishSuccess(channel, message)
+
+        }, function(err) {
+
+            this.onPublishFailure(channel, message)
+
+        })
+    }
+
+    onPublishSuccess(channel, data) {
+
+        // TODO whether we update stats from success will depend on strategy of obsolete data
+        let stats = this.channelStats[channel.id]
+        stats['lastProbeTS']  = stats['lastProbeTS'] + channel.getCaptureStepInS()
+        stats['lastNumRecords'] = data.length
+        stats['totalNumRecords'] += data.length
+
+        logger.debug(`Prom manager successfully published data for channel #${channel.id}`)
+
+    }
+
+    onPublishFailure(channel, data) {
+        
+        logger.error(`publishing failed for ${channel.id}`)
+        channel.updateStatus('Prom on publish failure', MetricChannelStatus.KafkaDirty)
+
     }
 }

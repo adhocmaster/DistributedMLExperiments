@@ -19,6 +19,7 @@ export class KafkaManager {
     constructor(name='Default KafkaManager', hosts=[], clientOptions = {}) {
 
         logger.warn( `setting up kafka with hosts: ${hosts}` )
+
         this._defaultProducerOptions = {
                 requireAcks: 1,
                 ackTimeoutMs: 100,
@@ -76,7 +77,7 @@ export class KafkaManager {
 
     }
 
-    createManagedProducer(topic: string, options: any): KafkaProducer {
+    createManagedProducer(topic: string, options: any=null): KafkaProducer {
 
         if (options == null || Object.keys(options).length === 0) {
             options = this._defaultProducerOptions
@@ -105,6 +106,24 @@ export class KafkaManager {
         } catch (e) {
             // ignore
         }
+
+    }
+
+    promiseToPublish(topic: string, message) {
+
+        return new Promise((resolve, reject) => {
+
+            let producer = this.getProducer(topic)
+            producer.sendObj(message, function(err, result) {
+
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve(result)
+                }
+            })
+
+        })
 
     }
 

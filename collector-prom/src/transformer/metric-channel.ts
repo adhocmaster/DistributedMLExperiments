@@ -47,6 +47,15 @@ export class MetricChannel {
         this.captureStepUnit = 's'
     }
 
+    getCaptureStepInS() {
+
+        switch (this.captureStepUnit) {
+            case 's': { return (this.captureStepAmount) }
+            case 'm': { return (this.captureStepAmount * 60) }
+            case 'h': { return (this.captureStepAmount * 3600) }
+        }
+    }
+
     getrequestIntervalInMS() {
         if (this.captureStep) {
             switch (this.captureStepUnit) {
