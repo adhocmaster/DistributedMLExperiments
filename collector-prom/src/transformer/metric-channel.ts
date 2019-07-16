@@ -1,24 +1,25 @@
 import {MetricChannelStatus} from 'transformer/metric-channel-status'
 import {injectable, inject} from 'inversify'
 import {PromManager} from 'prometheus/prom-manager'
-
+import {SourceConfiguration} from 'transformer/source-configuration'
+import { SourceType } from './source-types';
 "use strict"
 
 export class MetricChannel {
     id: number
     topic: string
-    requestRate: number // in ms. It's ignored if captureStep is setup.
+    requestInterval: number // in ms. It's ignored if captureStep is setup.
     captureStep: string // in s=sec, m=min.
     captureStepAmount:number
     captureStepUnit: string
     // promQuery: string
-    sourceConfigurations: {}
+    sourceConfigurations: SourceConfiguration[] 
     status: MetricChannelStatus
 
     // Prom managers
     promManager: PromManager
 
-    constructor(id: number=null, topic, sourceConfigurations, requestRate=1000, captureStep=null) {
+    constructor(id: number=null, topic, sourceConfigurations: SourceConfiguration[], requestInterval=1000, captureStep=null) {
 
         this.id = id
         this.topic = topic
@@ -34,7 +35,7 @@ export class MetricChannel {
         this.captureStepUnit = 's'
     }
 
-    getRequestRateInMS() {
+    getrequestIntervalInMS() {
         if (this.captureStep) {
             switch (this.captureStepUnit) {
                 case 's': { return (this.captureStepAmount * 1000) }
@@ -42,17 +43,17 @@ export class MetricChannel {
                 case 'h': { return (this.captureStepAmount * 3600000) }
             }
         } else {
-            return this.requestRate
+            return this.requestInterval
         }
     }
     init() {
         // creates a kafka producer and a input stream 
-        for (let source in this.sourceConfigurations) {
+        for (let source of this.sourceConfigurations) {
 
             // Find the source manager
             switch(source['type']) {
-                case 'prom': {
-                    return this.promManager.setupStreamForChannel(this)
+                case SourceType.PROM: {
+                    return this.promManager.setupStreamForChannel(this, source)
                 }
             }
 

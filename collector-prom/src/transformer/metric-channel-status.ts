@@ -1,8 +1,10 @@
 export enum MetricChannelStatus {
-    Starting,
-    Ready,
-    KafkaDirty,
-    KafkaDead,
-    SourceDirty,
-    SourceDead
+
+    Starting = 'Starting',
+    Ready = 'Ready',
+    KafkaDirty = 'KafkaDirty',
+    KafkaDead = 'KafkaDead',
+    SourceDirty = 'SourceDirty',
+    SourceDead = 'SourceDead'
+    
 }

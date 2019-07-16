@@ -1,6 +1,8 @@
 export enum KafkaStatus {
-    Starting,
-    Ready,
-    Dirty,
-    Dead
+
+    Starting = 'Starting',
+    Ready = 'Ready',
+    Dirty = 'Dirty',
+    Dead = 'Dead'
+    
 }
