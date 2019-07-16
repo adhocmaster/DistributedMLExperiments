@@ -3,31 +3,43 @@ import {injectable, inject} from 'inversify'
 import {PromManager} from 'prometheus/prom-manager'
 import {SourceConfiguration} from 'transformer/source-configuration'
 import { SourceType } from './source-types';
+import { logger } from 'src/logger';
 "use strict"
 
 export class MetricChannel {
     id: number
     topic: string
+    resolution: number // floating point seconds.
     requestInterval: number // in ms. It's ignored if captureStep is setup.
     captureStep: string // in s=sec, m=min.
     captureStepAmount:number
     captureStepUnit: string
-    // promQuery: string
+    timeout: string // prom duration syntax
     sourceConfigurations: SourceConfiguration[] // different metrics different configs
     status: MetricChannelStatus
 
     // Prom managers
     promManager: PromManager
 
-    constructor(id: number=null, topic, sourceConfigurations: SourceConfiguration[], requestInterval=1000, captureStep=null) {
+    constructor(id: number=null, topic, sourceConfigurations: SourceConfiguration[], requestInterval=1000, resolution=15.0, captureStep=null, timeout='30s') {
 
         this.id = id
         this.topic = topic
         this.sourceConfigurations = sourceConfigurations // TODO validate source configurations
+        this.resolution = resolution
+        this.requestInterval = requestInterval
         this.captureStep = captureStep // TODO validate captureStep
+        this.timeout = timeout
+
+        this.status = MetricChannelStatus.Starting
 
         this.processCaptureStep()
 
+    }
+
+    updateStatus(updater: string, newStatus: MetricChannelStatus) {
+        logger.debug( `${updater} is updating channel ${this.id}'s status to ${newStatus}`)
+        this.status = newStatus
     }
     processCaptureStep() {
         // TODO implement

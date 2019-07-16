@@ -4,6 +4,8 @@ import { SourceConfiguration } from "src/transformer/source-configuration";
 import { inject } from "inversify";
 import { ConfigManager } from "src/util/config-manager";
 import { ChannelStats } from "src/transformer/channel-stats";
+import { MetricChannelStatus } from "src/transformer/metric-channel-status";
+import { logger } from "src/logger";
 
 export class PromManager {
     
@@ -53,30 +55,68 @@ export class PromManager {
     initChannelStats(channel: MetricChannel) {
 
         this.liveChannels[channel.id] = channel
+        let initialProbTS = Date.now() - channel.getrequestIntervalInMS() // TODO ensure now is in sync with prom
         this.channelStats[channel.id] = {
 
-            lastProbeTS: (Date.UTC - channel.getrequestIntervalInMS), 
+            lastProbeTS: initialProbTS, 
             lastNumRecords: 0, 
             totalNumRecords: 0
         }
     }
 
-    fetchAndPublish(channel: MetricChannel, sourceConfiguration: SourceConfiguration) {
+    fetchAndPublish(channelId: number, sourceConfiguration: SourceConfiguration) {
 
+        let channel = this.liveChannels[channelId] // TODO handle it if there is not channel
+        let stats = this.channelStats[channelId]
         let query = sourceConfiguration.query
         if (sourceConfiguration.isRanged) {
 
-            Axios.get(this.rangeUrl, {
+            Axios.post(this.rangeUrl, {
                 params: {
                     query: query,
-                    start: ,
-                    end: ,
-                    step ,
-                    timeout:
+                    start: stats['lastProbeTS'],
+                    end: stats['lastProbeTS'] + channel.captureStep,
+                    step: channel.resolution,
+                    timeout: channel.timeout
                 }
+            }).then(function(response) {
+
+                this.processTimeSeries(channel, response)
+
+            }).catch(function(err) {
+
+                channel.updateStatus("Prom fetch of fetchAndPublish", MetricChannelStatus.SourceDirty)
+                logger.error(err.message, err)
+
+            }).finally(function() {
+
+                // any followup
+
             })
         }
 
+        // TODO implement instant queries
 
+    }
+
+    processTimeSeries(channel, data) {
+        // 1. Publish
+
+        if (data.status == 'success') {
+
+            this.publish(channel, data['data']['result'])
+
+        } else {
+
+            logger.error(`invalid timeseries data from Prom: ${data.status} for channel #${channel.id}`)
+            channel.updateStatus(MetricChannelStatus.SourceDirty)
+            
+        }
+
+        // 2. TODO Update Stats on success? what happens if Kafka goes down and comes back with a lot of obsolete data?
+    }
+
+    publish(channel, message) {
+        // TODO
     }
 }
