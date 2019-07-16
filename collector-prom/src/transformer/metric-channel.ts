@@ -13,7 +13,7 @@ export class MetricChannel {
     captureStepAmount:number
     captureStepUnit: string
     // promQuery: string
-    sourceConfigurations: SourceConfiguration[] 
+    sourceConfigurations: SourceConfiguration[] // different metrics different configs
     status: MetricChannelStatus
 
     // Prom managers

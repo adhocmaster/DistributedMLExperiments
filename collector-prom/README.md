@@ -10,6 +10,8 @@ We are dividing the configurations for metrics based on
 3. Topic
 4. Sources, i.e. - namespace, app, etc
 5. Rate of request?
+6. Resolution/step (#secs)
+7. timeout (different queries can indeed have different expected execution time)
 
 ## Common Configuration
 1. Target Application / name spaces
