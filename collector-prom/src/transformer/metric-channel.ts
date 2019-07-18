@@ -8,7 +8,7 @@ import { logger } from 'src/logger';
 
 export class MetricChannel {
 
-    id: number
+    id: string
     topic: string
     resolution: number // floating point seconds.
     requestInterval: number // in ms. It's ignored if captureStep is setup.
@@ -19,18 +19,15 @@ export class MetricChannel {
     sourceConfigurations: SourceConfiguration[] // different metrics different configs
     status: MetricChannelStatus
 
-    // Prom managers
-    @inject('PromManager') promManager: PromManager // doesn't work in java, but should work in node even if we are gonna call the constructor
+    constructor(config) {
 
-    constructor(id: number=null, sourceConfigurations: SourceConfiguration[]) {
-
-        this.id = id
-        this.topic = topic
-        this.sourceConfigurations = sourceConfigurations // TODO validate source configurations
-        this.resolution = resolution
-        this.requestInterval = requestInterval
-        this.captureStep = captureStep // TODO validate captureStep
-        this.timeout = timeout
+        this.id = config.id
+        this.topic = config.topic
+        this.sourceConfigurations = config.sources // TODO validate source configurations
+        this.resolution = config.resolution
+        this.requestInterval = config.requestInterval
+        this.captureStep = config.captureStep // TODO validate captureStep
+        this.timeout = config.timeout
 
         this.status = MetricChannelStatus.Starting
 
@@ -68,14 +65,16 @@ export class MetricChannel {
             return this.requestInterval
         }
     }
-    init() {
+    init(promManager: PromManager) {
+
+        logger.debug(`Initializing channel ${this.id}`)
         // creates a kafka producer and a input stream 
         for (let source of this.sourceConfigurations) {
 
             // Find the source manager
             switch(source['type']) {
                 case SourceType.PROM: {
-                    return this.promManager.setupStreamForChannel(this, source)
+                    return promManager.setupStreamForChannel(this, source)
                 }
             }
 

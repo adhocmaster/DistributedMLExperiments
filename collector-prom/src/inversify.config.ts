@@ -13,7 +13,9 @@ IoC.bind<ConfigManager>("ConfigManager").toConstantValue(configManager)
 setupKafka()
 IoC.bind<PromManager>("PromManager").toConstantValue(IoC.resolve<PromManager>(PromManager))
 // IoC.resolve<PromManager>(PromManager)
-IoC.bind<MetricManager>('MetricManager').toConstantValue(IoC.resolve<MetricManager>(MetricManager))
+const metricManager = IoC.resolve<MetricManager>(MetricManager)
+
+IoC.bind<MetricManager>('MetricManager').toConstantValue(metricManager)
 
 function setupKafka() {
 

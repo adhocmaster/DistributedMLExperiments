@@ -19,22 +19,32 @@ export class PromManager {
     instantUrl: string
     rangeUrl: string
     liveChannels:{} //{ id: channel }
-    channelStats: {number: ChannelStats} // {id: {lastProbeTS: remote UTC, lastNumRecords:, totalNumRecords:}}
+    channelStats: {} // {id: {lastProbeTS: remote UTC, lastNumRecords:, totalNumRecords:}}
     timers: {}
 
-    constructor(@inject('ConfigManager') configManager, @inject('KafkaManager') kafkaManager) {
+    constructor(
+        @inject('ConfigManager') configManager: ConfigManager, 
+        @inject('KafkaManager') kafkaManager: KafkaManager
+        ) {
 
         this.kafkaManager = kafkaManager
         this.host = configManager.getStr('prom.host')
         this.port = configManager.getStr('prom.port')
         this.instantUrl = 'http://' + this.host + ':' + this.port + '/api/v1/query'
         this.rangeUrl = 'http://' + this.host + ':' + this.port + '/api/v1/query_range'
+
+        this.liveChannels = {}
+        this.channelStats = {}
+        this.timers = {}
+
     }
 
     /* 
     need to explicitly pass which sourceConfiguration to use as there can be multiple schema publishing to the same topic
     */
     setupStreamForChannel(channel: MetricChannel, sourceConfiguration: SourceConfiguration) {
+
+        logger.debug(`PromManager: Setting up stream for channel ${channel.id}`)
 
         if (channel.id in this.liveChannels) {
             let existingChannel = this.liveChannels[channel.id]
@@ -72,6 +82,8 @@ export class PromManager {
 
     fetchAndPublish(channel: MetricChannel, sourceConfiguration: SourceConfiguration) {
 
+        logger.debug(`PromManager: fetchAndPublish of ${channel.id} with source ${JSON.stringify(sourceConfiguration)}`)
+
         let stats = this.channelStats[channel.id]
         let query = sourceConfiguration.query
         if (sourceConfiguration.isRanged) {
@@ -85,7 +97,8 @@ export class PromManager {
                     timeout: channel.timeout
                 }
             }).then(function(response) {
-
+                
+                logger.debug("PromManager: successfully scraped source for " + channel.id)
                 this.processTimeSeries(channel, response)
 
             }).catch(function(err) {
@@ -98,17 +111,23 @@ export class PromManager {
                 // any followup
 
             })
+        } else {
+            throw Error("Not implemented yet")
+            // TODO implement instant queries
+
         }
 
-        // TODO implement instant queries
 
     }
 
     processTimeSeries(channel, rawData) {
         // 1. Publish
 
+        logger.debug(`PromManager: processTimeSeries for ${channel.id}`)
+
         if (rawData.status == 'success') {
 
+            logger.debug(`PromManager: publishing for ${channel.id} to ${channel.topic}`)
             this.publish(channel, this.getMQMessage(rawData)) // Use a promise to do it
 
         } else {
@@ -166,5 +185,9 @@ export class PromManager {
         logger.error(`publishing failed for ${channel.id}`)
         channel.updateStatus('Prom on publish failure', MetricChannelStatus.KafkaDirty)
 
+    }
+
+    shutdown() {
+        // TODO graceful shutdown
     }
 }
