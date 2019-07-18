@@ -1,0 +1,16 @@
+
+id: test-kafka-001
+topic: test-kafka-memory
+captureStep: 5m
+requestInterval: 30s
+timeout: 30s
+sources:
+  - type: PROM
+    isRanged: true
+    query: 'container_memory_usage_bytes{namespace=kafka}'
+  - type: PROM
+    isRanged: true
+    query: 'container_memory_max_usage_bytes{namespace=kafka}'
+    resolution: 10.0
+    captureStep: 10m
+    timeout: 60s

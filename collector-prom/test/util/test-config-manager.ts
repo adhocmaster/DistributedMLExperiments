@@ -5,6 +5,7 @@ import {IoC} from "src/inversify.config"
 import {inject} from 'inversify'
 import {ConfigManager} from 'src/util/config-manager'
 import { logger } from 'src/logger';
+import {IO} from 'util/io'
 
 describe('ConfigManager', function() {
 
@@ -36,6 +37,16 @@ describe('ConfigManager', function() {
         expect(config.get('prom.host')).to.equal('192.168.26.10')
         expect(config.get('prom.port')).to.equal(9090)
 
+    })
+
+    it("reads all the configs in a directory and creates an array with each element representing a file", () => {
+        let dir = 'source-configs'
+        let configs = config.readConfigDir(dir)
+        // logger.debug( JSON.stringify( configs ) )
+        // console.dir(configs, {depth:5})
+
+        IO.deepPrint(configs)
+        expect(configs).to.have.lengthOf.above(0)
     })
 
 })

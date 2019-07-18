@@ -3,6 +3,7 @@ import * as yaml from 'js-yaml'
 import * as fs from 'fs'
 import {injectable} from 'inversify'
 import {logger} from 'logger'
+import { IO } from './io';
 
 @injectable()
 export class ConfigManager {
@@ -13,23 +14,30 @@ export class ConfigManager {
         const environment = process.env.NODE_ENV || 'default'; 
 
         // load default
-        this.data = this.load('default')
+        this.data = this.readEnvironment('default')
         this.data['environment'] = environment
-        console.log(this.data)
         if (environment != 'default') {
             // load specific
-            let environmentConfig = this.load(environment)
+            let environmentConfig = this.readEnvironment(environment)
             this.data = lodash.merge(this.data, environmentConfig)
         }
-        console.log(this.data)
+        IO.deepPrint(this.data)
 
     }
 
-    load(environment: string) {
+    readEnvironment(environment: string) {
 
         let path = `env/${environment}.yaml`
         logger.warn(`loading environment '${environment}' from '${path}'`)
+        return this.readYamlFile(path);
+    }
+
+    readYamlFile(path: string) {
         return yaml.safeLoad(fs.readFileSync(path, 'utf8'));
+    }
+
+    readMultiYamlFile(path: string) {
+        return yaml.safeLoadAll(fs.readFileSync(path, 'utf8'));
     }
 
     getStr(name: string, orDefault=null) {
@@ -50,15 +58,9 @@ export class ConfigManager {
         let self = this
         return name.split('.').reduce((p,c) => {
             let val =  (p && p[c]) || orDefault
-            // console.log(p)
-            // console.log(c)
-            // console.log( `p: ${p}, p[c]: ${p[c]}` )
             return val
         }, self.data)
-
-        // if (name in this.data)
-        //     return this.data[name]
-        // return orDefault
+        
     }
 
     save(environment: string) {
@@ -74,6 +76,18 @@ export class ConfigManager {
             }
             logger.warn(path + " file was overwritten!");
         });
+
+    }
+
+    readConfigDir(dir: string) {
+        let paths = fs.readdirSync(dir)
+        let configs = []
+
+        paths.forEach(path => {
+            configs = configs.concat( this.readMultiYamlFile(dir +'/' + path) )
+        });
+
+        return configs
 
     }
 

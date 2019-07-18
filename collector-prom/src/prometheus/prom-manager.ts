@@ -1,7 +1,7 @@
 import { MetricChannel } from "src/transformer/metric-channel";
 import Axios from 'axios'
 import { SourceConfiguration } from "src/transformer/source-configuration";
-import { inject } from "inversify";
+import { inject, injectable } from "inversify";
 import { ConfigManager } from "src/util/config-manager";
 import { ChannelStats } from "src/transformer/channel-stats";
 import { MetricChannelStatus } from "src/transformer/metric-channel-status";
@@ -10,6 +10,7 @@ import { KafkaManager } from "src/kafka/kafka-manager";
 import { resolve } from "url";
 import { SourceType } from "src/transformer/source-types";
 
+@injectable()
 export class PromManager {
     
     kafkaManager: KafkaManager

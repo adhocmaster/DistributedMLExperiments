@@ -1,0 +1,35 @@
+
+id: test001
+topic: test-istio-memory
+captureStep: 5m
+requestInterval: 30s
+resolution: 10
+timeout: 30s
+sources:
+  - type: PROM
+    isRanged: true
+    query: 'container_memory_usage_bytes{namespace=istio-system}'
+  - type: PROM
+    isRanged: true
+    query: 'container_memory_max_usage_bytes{namespace=istio-system}'
+    resolution: 10.0
+    captureStep: 10m
+    timeout: 60s
+
+---
+id: test002
+topic: test-istio-cpu
+captureStep: 5m
+requestInterval: 30s
+resolution: 10
+timeout: 30s
+sources:
+  - type: PROM
+    isRanged: true
+    query: 'container_cpu_usage_seconds_total{namespace=istio-system}'
+  - type: PROM
+    isRanged: true
+    query: 'container_cpu_load_average_10s{namespace=istio-system}'
+    resolution: 10.0
+    captureStep: 10m
+    timeout: 60s

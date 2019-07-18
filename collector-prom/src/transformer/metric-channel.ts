@@ -7,6 +7,7 @@ import { logger } from 'src/logger';
 "use strict"
 
 export class MetricChannel {
+
     id: number
     topic: string
     resolution: number // floating point seconds.
@@ -19,9 +20,9 @@ export class MetricChannel {
     status: MetricChannelStatus
 
     // Prom managers
-    promManager: PromManager
+    @inject('PromManager') promManager: PromManager // doesn't work in java, but should work in node even if we are gonna call the constructor
 
-    constructor(id: number=null, topic, sourceConfigurations: SourceConfiguration[], requestInterval=1000, resolution=15.0, captureStep=null, timeout='30s') {
+    constructor(id: number=null, sourceConfigurations: SourceConfiguration[]) {
 
         this.id = id
         this.topic = topic
