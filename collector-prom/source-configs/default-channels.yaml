@@ -8,10 +8,10 @@ timeout: 30s
 sources:
   - type: PROM
     isRanged: true
-    query: 'container_memory_usage_bytes{namespace=istio-system}'
+    query: 'container_memory_usage_bytes{namespace="istio-system"}'
   - type: PROM
     isRanged: true
-    query: 'container_memory_max_usage_bytes{namespace=istio-system}'
+    query: 'container_memory_max_usage_bytes{namespace="istio-system"}'
     resolution: 10.0
     captureStep: 10m
     timeout: 60s
@@ -26,10 +26,10 @@ timeout: 30s
 sources:
   - type: PROM
     isRanged: true
-    query: 'container_cpu_usage_seconds_total{namespace=istio-system}'
+    query: 'container_cpu_usage_seconds_total{namespace="istio-system"}'
   - type: PROM
     isRanged: true
-    query: 'container_cpu_load_average_10s{namespace=istio-system}'
+    query: 'container_cpu_load_average_10s{namespace="istio-system"}'
     resolution: 10.0
     captureStep: 10m
     timeout: 60s

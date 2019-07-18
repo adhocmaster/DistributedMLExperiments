@@ -40,6 +40,9 @@ export class MetricManager {
 
         conigs.forEach(function(config){
 
+
+            self.fixWithDefaults(config);
+
             config.sources = self.getValidatedSources(config)
             let channel = new MetricChannel(config)
 
@@ -47,6 +50,16 @@ export class MetricManager {
 
         })
 
+    }
+
+    private fixWithDefaults(config: any) {
+        let defaults = {
+            resolution: 15.0,
+            captureStep: '5m',
+            requestInterval: '30s',
+            timeout: '30s'
+        };
+        lodash.defaultsDeep(config, defaults);
     }
 
     setupChannel(channel: MetricChannel) {

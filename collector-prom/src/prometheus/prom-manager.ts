@@ -9,6 +9,7 @@ import { logger } from "src/logger";
 import { KafkaManager } from "src/kafka/kafka-manager";
 import { resolve } from "url";
 import { SourceType } from "src/transformer/source-types";
+import { IO } from "src/util/io";
 
 @injectable()
 export class PromManager {
@@ -19,7 +20,7 @@ export class PromManager {
     instantUrl: string
     rangeUrl: string
     liveChannels:{} //{ id: channel }
-    channelStats: {} // {id: {lastProbeTS: remote UTC, lastNumRecords:, totalNumRecords:}}
+    channelStats: {} // {id: {lastProbeTS: remote UTC, lastNumRecords:, totalNumRecords:}} all in seconds
     timers: {}
 
     constructor(
@@ -71,7 +72,7 @@ export class PromManager {
     initChannelStats(channel: MetricChannel) {
 
         this.liveChannels[channel.id] = channel
-        let initialProbTS = Date.now() - channel.getrequestIntervalInMS() // TODO ensure now is in sync with prom
+        let initialProbTS = (Date.now() - channel.getrequestIntervalInMS()) / 1000 // TODO ensure now is in sync with prom
         this.channelStats[channel.id] = {
 
             lastProbeTS: initialProbTS, 
@@ -103,6 +104,7 @@ export class PromManager {
 
             }).catch(function(err) {
 
+                IO.printAxiosError(err)
                 channel.updateStatus("Prom fetch of fetchAndPublish", MetricChannelStatus.SourceDirty)
                 logger.error(err.message, err)
 
