@@ -88,7 +88,7 @@ export class PromManager {
         let query = sourceConfiguration.query
         if (sourceConfiguration.isRanged) {
 
-            Axios.post(this.rangeUrl, {
+            Axios.get(this.rangeUrl, {
                 params: {
                     query: query,
                     start: stats['lastProbeTS'],
